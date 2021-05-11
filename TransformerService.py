@@ -1,24 +1,12 @@
 # By Jacob Vilevac
 # Transformer Service that converts addresses into google maps urls.
 import tkinter as tk
-
-testAddy = ["Target Plaza1000 Nicollet MallMinneapolis, Minnesota, U.S.","-33.712206,150.311941","San Jose, California, United States37°20′07″N 121°52′53″W﻿ / ﻿37.3353°N 121.8813°W﻿ / 37.3353; -121.8813Coordinates: 37°20′07″N 121°52′53″W﻿ / ﻿37.3353°N 121.8813°W﻿ / 37.3353; -121.8813"]
-
-def main():
-    testConvert()
-    
+from tkinter import filedialog
+   
 def testConvert():
     converted = convertAddresses(testAddy)
     for addr in converted:
         print(addr)
-
-def convertAddresses(array):
-    output = []
-
-    for addr in array:
-        output.append(convertToUrl(addr))
-
-    return output
 
 def convertToUrl(addr):
     # Encoding Rules
@@ -33,59 +21,103 @@ def convertToUrl(addr):
         output = "https://www.google.com/maps/search/?api=1&query=" + output
         return output
 
+def convertFromCSV(csv):
+    csv = csv.split("\n")
+    csv.pop()
+    i = 0
+    for item in csv:
+        csv[i] = item.replace("\"","").split(",",3)
+        #print(csv[i])
+        i = i + 1
+    
+    return csv
 
-def guiButtonPress():
-    textIn = text.get("1.0", "end-1c")
-    textIn = textIn.splitlines()
-    #text.delete("1.0", "end-1c")
-    textOutArray = convertAddresses(textIn)
-    textOut = "\n"
-    for addr in textOutArray:
-        textOut += (addr + "\n")
+def convertToCSV(data):
+    outputCSV = ""
 
-    label2.pack()
-    text2.pack(fill=tk.BOTH, expand=True)
-    text2.delete("1.0", "end-1c")
-    text2.insert(tk.END, textOut)
+    for i in data:
+        for j in i:
+            if isinstance(j, int):
+                outputCSV += (j + ",")
+            else:
+                outputCSV += ("\"" + j + "\"" + ",")
+        outputCSV += "\n"
 
-main()
+    return outputCSV
+
+def guiOpen():
+    file_path = filedialog.askopenfilename()
+    if not file_path:
+        return
+    elif not file_path.find(".csv"):
+        return
+
+    with open(file_path, "r") as input_file:
+        text = input_file.read()
+        global employerData 
+        employerData = convertFromCSV(text)
+        guiCreateDataTable(employerData)
+
+    window.title(f"Employer Transformer Service - {file_path}")
+
+def guiCreateDataTable(employerData):
+    for i in range(len(employerData)):
+        for j in range(len(employerData[i])):
+            cell = tk.Frame(
+                master = data_frame,
+                relief = tk.RAISED,
+                borderwidth = 1)
+            cell.grid(row = i, column = j, sticky="ew")
+            cellText = employerData[i][j]
+            if cellText.find("N/A") != -1 or cellText.find("°") != -1:
+                cellText = "N/A"
+            label = tk.Label(master = cell, text = cellText, anchor="w", justify="left", padx=3, pady=2)
+            label.pack(fill="both")
+
+def guiTransform():
+    if not employerData:
+        return
+
+    for row in employerData[1:]:
+        row.append((convertToUrl(row[3])))
+
+    for cell in data_frame.winfo_children():
+        cell.destroy()
+
+    guiCreateDataTable(employerData)
+
+def guiSaveAs():
+    fileExtentions = [("Comma Seperated Values", '*.csv')]
+    file = filedialog.asksaveasfile(mode='w', filetypes = fileExtentions, defaultextension = fileExtentions)
+    if file is None:
+        return
+    dataToSave = convertToCSV(employerData)
+    file.write(dataToSave)
+    file.close()
+
+# Global Data
+employerData = 0
 
 # GUI
 window = tk.Tk()
-label = tk.Label(
-    text="Please input addresses seperated by a new line.",
-    foreground="black",  # Set the text color to white (fg shorthand)
-    #background="white"  # Set the background color to black (bg shorthand)
-)
 
-text = tk.Text(
-    fg="black", 
-    bg="#fefefe",
-    width=50
-)
+window.title("Employer Transformer Service")
 
+window.rowconfigure(0, minsize=500, weight=1)
+window.columnconfigure(1, minsize=500, weight=1)
 
-label2 = tk.Label(
-    text="Output Google Maps Links",
-    foreground="black",  # Set the text color to white (fg shorthand)
-    #background="white"  # Set the background color to black (bg shorthand)
-)
-text2 = tk.Text(
-    fg="black", 
-    bg="#fefefe",
-    width=50
-)
+data_frame = tk.Frame(window)
+fr_buttons = tk.Frame(window, bg="#686868")
 
-button = tk.Button(
-    text="Transform",
-    command=guiButtonPress,
-    width=10,
-    height=2,
-    bg="#fefefe",
-    fg="black",
-)
-label.pack()
-text.pack(fill=tk.BOTH, expand=True)
-button.pack()
+btn_open = tk.Button(fr_buttons, text="Open", command=guiOpen)
+btn_transform = tk.Button(fr_buttons, text="Transform", command=guiTransform)
+btn_save = tk.Button(fr_buttons, text="Save As", command=guiSaveAs)
+
+btn_open.grid(row=0, column=0, sticky="ew", padx=5, pady=5)
+btn_transform.grid(row=1, column=0, sticky="ew", padx=5, pady=5)
+btn_save.grid(row=2, column=0, sticky="ew", padx=5, pady=5)
+
+fr_buttons.grid(row=0, column=0, sticky="ns")
+data_frame.grid(row=0, column=1, sticky="nsew")
 
 window.mainloop()
