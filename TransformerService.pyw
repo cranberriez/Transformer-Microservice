@@ -109,9 +109,9 @@ window.rowconfigure(0, minsize=500, weight=1)
 window.columnconfigure(1, minsize=500, weight=1)
 
 data_frame = tk.Frame(window)
-fr_buttons = tk.Frame(window, bg="#686868")
+fr_buttons = tk.Frame(window, bg="#686868", pady=5)
 
-btn_open = tk.Button(fr_buttons, text="Open", command=guiOpen)
+btn_open = tk.Button(fr_buttons, text="Open .csv", command=guiOpen)
 btn_transform = tk.Button(fr_buttons, text="Transform", command=guiTransform)
 btn_save = tk.Button(fr_buttons, text="Save As", command=guiSaveAs)
 
