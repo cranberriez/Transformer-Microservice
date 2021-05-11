@@ -37,9 +37,11 @@ def convertToCSV(data):
 
     for i in data:
         for j in i:
-            if isinstance(j, int):
+            val = j
+            try:
+                val = int(val)
                 outputCSV += (j + ",")
-            else:
+            except ValueError:
                 outputCSV += ("\"" + j + "\"" + ",")
         outputCSV += "\n"
 
@@ -49,7 +51,7 @@ def guiOpen():
     file_path = filedialog.askopenfilename()
     if not file_path:
         return
-    elif not file_path.find(".csv"):
+    if not file_path.endswith(".csv"):
         return
 
     with open(file_path, "r") as input_file:
