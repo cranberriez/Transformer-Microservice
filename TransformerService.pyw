@@ -92,6 +92,8 @@ def guiTransform():
     if transformed:
         return
 
+    employerData[0].append("Google URL")
+
     for row in employerData[1:]:
         row.append((convertToUrl(row[3])))
 
