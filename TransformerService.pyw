@@ -72,6 +72,7 @@ def guiOpen():
     if not file_path:
         return
     if not file_path.endswith(".csv"):
+        tk.messagebox.showwarning(title="Invalid Filetype", message="Only .csv files can be opened with this transformer service!")
         return
 
     for cell in data_frame.winfo_children():
