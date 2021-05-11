@@ -2,7 +2,11 @@
 # Transformer Service that converts addresses into google maps urls.
 import tkinter as tk
 from tkinter import filedialog
-   
+
+# Global Data
+employerData = 0
+transformed = False
+
 def testConvert():
     converted = convertAddresses(testAddy)
     for addr in converted:
@@ -27,7 +31,6 @@ def convertFromCSV(csv):
     i = 0
     for item in csv:
         csv[i] = item.replace("\"","").split(",",3)
-        #print(csv[i])
         i = i + 1
     
     return csv
@@ -47,21 +50,6 @@ def convertToCSV(data):
 
     return outputCSV
 
-def guiOpen():
-    file_path = filedialog.askopenfilename()
-    if not file_path:
-        return
-    if not file_path.endswith(".csv"):
-        return
-
-    with open(file_path, "r") as input_file:
-        text = input_file.read()
-        global employerData 
-        employerData = convertFromCSV(text)
-        guiCreateDataTable(employerData)
-
-    window.title(f"Employer Transformer Service - {file_path}")
-
 def guiCreateDataTable(employerData):
     for i in range(len(employerData)):
         for j in range(len(employerData[i])):
@@ -76,8 +64,32 @@ def guiCreateDataTable(employerData):
             label = tk.Label(master = cell, text = cellText, anchor="w", justify="left", padx=3, pady=2)
             label.pack(fill="both")
 
+def guiOpen():
+    global transformed
+    transformed = False
+
+    file_path = filedialog.askopenfilename()
+    if not file_path:
+        return
+    if not file_path.endswith(".csv"):
+        return
+
+    for cell in data_frame.winfo_children():
+        cell.destroy()
+
+    with open(file_path, "r") as input_file:
+        text = input_file.read()
+        global employerData 
+        employerData = convertFromCSV(text)
+        guiCreateDataTable(employerData)
+
+    window.title(f"Employer Transformer Service - {file_path}")
+
 def guiTransform():
+    global transformed
     if not employerData:
+        return
+    if transformed:
         return
 
     for row in employerData[1:]:
@@ -87,6 +99,7 @@ def guiTransform():
         cell.destroy()
 
     guiCreateDataTable(employerData)
+    transformed = True
 
 def guiSaveAs():
     fileExtentions = [("Comma Seperated Values", '*.csv')]
@@ -96,9 +109,6 @@ def guiSaveAs():
     dataToSave = convertToCSV(employerData)
     file.write(dataToSave)
     file.close()
-
-# Global Data
-employerData = 0
 
 # GUI
 window = tk.Tk()
