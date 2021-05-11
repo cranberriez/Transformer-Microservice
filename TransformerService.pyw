@@ -7,11 +7,6 @@ from tkinter import filedialog
 employerData = 0
 transformed = False
 
-def testConvert():
-    converted = convertAddresses(testAddy)
-    for addr in converted:
-        print(addr)
-
 def convertToUrl(addr):
     # Encoding Rules
     #   %7C = |
@@ -39,13 +34,21 @@ def convertToCSV(data):
     outputCSV = ""
 
     for i in data:
+        rowlen = len(i)
+
         for j in i:
             val = j
             try:
                 val = int(val)
-                outputCSV += (j + ",")
+                if j != i[rowlen-1]:
+                    outputCSV += (j + ",")
+                else:
+                    outputCSV += j
             except ValueError:
-                outputCSV += ("\"" + j + "\"" + ",")
+                if j != i[rowlen-1]:
+                    outputCSV += ("\"" + j + "\"" + ",")
+                else:
+                    outputCSV += ("\"" + j + "\"")
         outputCSV += "\n"
 
     return outputCSV
@@ -84,7 +87,7 @@ def guiOpen():
         employerData = convertFromCSV(text)
         guiCreateDataTable(employerData)
 
-    window.title(f"Employer Transformer Service - {file_path}")
+    window.title(f"Address Transformer Service - {file_path}")
 
 def guiTransform():
     global transformed
