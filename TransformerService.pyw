@@ -2,7 +2,7 @@
 # Transformer Service that converts addresses into google maps urls.
 import tkinter as tk
 from tkinter import filedialog
-import csv
+import csv, sys, getopt
 
 # Global Data
 employerData = []
@@ -30,6 +30,7 @@ def guiClearTable():
         cell.destroy()
 
 def guiCreateDataTable(employerData):
+    guiClearTable()
     for i in range(len(employerData)):
         for j in range(len(employerData[i])):
             cell = tk.Frame(
@@ -60,8 +61,6 @@ def guiOpen(filename):
         tk.messagebox.showwarning(title="Invalid Filetype", message="Only .csv files can be opened with this transformer service!")
         return
 
-    guiClearTable()
-
     with open(file_path, newline='\n') as csvfile:
         employerData = []
         reader = csv.reader(csvfile, delimiter=',', quotechar='"')
@@ -75,7 +74,8 @@ def guiOpen(filename):
             if col == "Google URL":
                 transformed = True
 
-        guiCreateDataTable(employerData)
+        if (useGUI):
+            guiCreateDataTable(employerData)
 
     window.title(f"Address Transformer Service - {file_path}")
 
@@ -92,9 +92,8 @@ def guiTransform():
     for row in employerData[1:]:
         row.append((convertToUrl(row[transformCol])))
 
-    guiClearTable()
-
-    guiCreateDataTable(employerData)
+    if (useGUI):
+        guiCreateDataTable(employerData)
     transformed = True
 
 def guiSaveAs(filename):
@@ -182,8 +181,47 @@ def createGUI():
 
     window.mainloop()
 
-def main():
+def main(argv):
+    global useGUI
+
+    if len(sys.argv) > 1:
+        useGUI = False
+    
+        inputfile = ''
+        outputfile = ''
+        global transformCol
+        try:
+            opts, args = getopt.getopt(argv,"hi:o:c:",["ifile=","ofile=","tcolumn="])
+        except getopt.GetoptError:
+            print('TransformerService.pyw -i <input file> -o <output file> -c <transform column>')
+            sys.exit(2)
+        for opt, arg in opts:
+            if opt == '-h':
+                print('TransformerService.pyw -i <inputfile> -c <transform column>')
+                sys.exit()
+            elif opt in ("-i", "--ifile"):
+                inputfile = arg
+            elif opt in ("-o", "--ofile"):
+                outputfile = arg
+            elif opt in ("-c", "--ofile"):
+                transformCol = int(arg)
+        if not inputfile:
+            print("Input file is required")
+            sys.exit()
+        print('Input file is '+ inputfile)
+        if not outputfile:
+            print("Output file is required")
+            sys.exit()
+        print('Output file is '+ outputfile)
+        print('Transform column is '+ str(transformCol))
+
     if (useGUI):
         createGUI()
+    else:
+        guiOpen(inputfile)
+        guiTransform()
+        guiSaveAs(outputfile)
+        return
 
-main()
+if __name__ == "__main__":
+   main(sys.argv[1:])
