@@ -85,6 +85,11 @@ def guiOpen():
         text = input_file.read()
         global employerData 
         employerData = convertFromCSV(text)
+        for col in employerData[0]:
+            print(col)
+            if col == "Google URL":
+                transformed = True
+
         guiCreateDataTable(employerData)
 
     window.title(f"Address Transformer Service - {file_path}")
@@ -118,24 +123,34 @@ def guiSaveAs():
 
 # GUI
 window = tk.Tk()
+useGUI = True
 
-window.title("Employer Transformer Service")
+def createGUI():
+    window.title("Employer Transformer Service")
 
-window.rowconfigure(0, minsize=500, weight=1)
-window.columnconfigure(1, minsize=500, weight=1)
+    window.rowconfigure(0, minsize=500, weight=1)
+    window.columnconfigure(1, minsize=500, weight=1)
 
-data_frame = tk.Frame(window)
-fr_buttons = tk.Frame(window, bg="#686868", pady=5)
+    global data_frame
+    data_frame = tk.Frame(window)
+    global fr_buttons
+    fr_buttons = tk.Frame(window, bg="#686868", pady=5)
 
-btn_open = tk.Button(fr_buttons, text="Open .csv", command=guiOpen)
-btn_transform = tk.Button(fr_buttons, text="Transform", command=guiTransform)
-btn_save = tk.Button(fr_buttons, text="Save As", command=guiSaveAs)
+    btn_open = tk.Button(fr_buttons, text="Open .csv", command=guiOpen)
+    btn_transform = tk.Button(fr_buttons, text="Transform", command=guiTransform)
+    btn_save = tk.Button(fr_buttons, text="Save As", command=guiSaveAs)
 
-btn_open.grid(row=0, column=0, sticky="ew", padx=5, pady=5)
-btn_transform.grid(row=1, column=0, sticky="ew", padx=5, pady=5)
-btn_save.grid(row=2, column=0, sticky="ew", padx=5, pady=5)
+    btn_open.grid(row=0, column=0, sticky="ew", padx=5, pady=5)
+    btn_transform.grid(row=1, column=0, sticky="ew", padx=5, pady=5)
+    btn_save.grid(row=2, column=0, sticky="ew", padx=5, pady=5)
 
-fr_buttons.grid(row=0, column=0, sticky="ns")
-data_frame.grid(row=0, column=1, sticky="nsew")
+    fr_buttons.grid(row=0, column=0, sticky="ns")
+    data_frame.grid(row=0, column=1, sticky="nsew")
 
-window.mainloop()
+    window.mainloop()
+
+def main():
+    if (useGUI):
+        createGUI()
+
+main()
