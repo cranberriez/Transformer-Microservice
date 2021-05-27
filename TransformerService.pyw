@@ -208,12 +208,10 @@ def main(argv):
         if not inputfile:
             print("Input file is required")
             sys.exit()
-        #print('Input file is '+ inputfile)
         if not outputfile:
             print("Output file is required")
             sys.exit()
-        #print('Output file is '+ outputfile)
-        #print('Transform column is '+ str(transformCol))
+        print('File: ' + inputfile + '; transformed to: ' + outputfile)
 
     if (useGUI):
         createGUI()
