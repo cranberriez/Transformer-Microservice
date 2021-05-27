@@ -75,6 +75,7 @@ def guiOpen(filename):
                 transformed = True
 
         if (useGUI):
+            guiPostOpen()
             guiCreateDataTable(employerData)
 
     window.title(f"Address Transformer Service - {file_path}")
@@ -93,6 +94,7 @@ def guiTransform():
         row.append((convertToUrl(row[transformCol])))
 
     if (useGUI):
+        guiPostTransform()
         guiCreateDataTable(employerData)
     transformed = True
 
@@ -109,8 +111,8 @@ def guiSaveAs(filename):
         for row in employerData:
             writer.writerow(row)
     
-    if not filename:
-        tk.messagebox.showinfo(title="File Saved Successfully", message="The file was successfully saved to " + file_path.name)
+    if useGUI:
+        tk.messagebox.showinfo(title="File Saved Successfully", message="The file was successfully saved to " + file_path)
 
 def incTransformCol(inc):
     global transformCol
@@ -143,7 +145,16 @@ def createGUI():
 
     open_label = tk.Label(master = fr_buttons, text = "Open .CSV File To View", anchor="w", justify="left", padx=3, pady=2, bg="#d3d3d3")
     btn_open = tk.Button(fr_buttons, text="Open", command= lambda: guiOpen(0))
+
+    open_label.grid(row=0, column=0, sticky="ew", padx=5, pady=(5,0))
+    btn_open.grid(row=1, column=0, sticky="ew", padx=5, pady=(0,5))
+
+    fr_buttons.grid(row=0, column=0, sticky="ns")
+    data_frame.grid(row=0, column=1, sticky="nsew")
+
+    window.mainloop()
     
+def guiPostOpen():
     tcol_label = tk.Label(master = fr_buttons, text = "Select Column to Transform", anchor="w", justify="left", padx=3, pady=2, bg="#d3d3d3")
     tcol_frame = tk.Frame(fr_buttons)
     for i in range(3):
@@ -161,25 +172,20 @@ def createGUI():
 
     transform_label = tk.Label(master = fr_buttons, text = "Add Google URL to .CSV", anchor="w", justify="left", padx=3, pady=2, bg="#d3d3d3")
     btn_transform = tk.Button(fr_buttons, text="Transform", command=guiTransform)
-    save_label = tk.Label(master = fr_buttons, text = "Save Transformed .CSV", anchor="w", justify="left", padx=3, pady=2, bg="#d3d3d3")
-    btn_save = tk.Button(fr_buttons, text="Save As", command= lambda: guiSaveAs(0))
-
-    open_label.grid(row=0, column=0, sticky="ew", padx=5, pady=(5,0))
-    btn_open.grid(row=1, column=0, sticky="ew", padx=5, pady=(0,5))
     
+
     tcol_label.grid(row=2, column=0, sticky="ew", padx=5, pady=(5,0))
     tcol_frame.grid(row=3, column=0, sticky="ew", padx=5, pady=(0,5))
     
     transform_label.grid(row=4, column=0, sticky="ew", padx=5, pady=(5,0))
     btn_transform.grid(row=5, column=0, sticky="ew", padx=5, pady=(0,5))
     
+def guiPostTransform():
+    save_label = tk.Label(master = fr_buttons, text = "Save Transformed .CSV", anchor="w", justify="left", padx=3, pady=2, bg="#d3d3d3")
+    btn_save = tk.Button(fr_buttons, text="Save As", command= lambda: guiSaveAs(0))
+
     save_label.grid(row=6, column=0, sticky="ew", padx=5, pady=(5,0))
     btn_save.grid(row=7, column=0, sticky="ew", padx=5, pady=(0,5))
-
-    fr_buttons.grid(row=0, column=0, sticky="ns")
-    data_frame.grid(row=0, column=1, sticky="nsew")
-
-    window.mainloop()
 
 def main(argv):
     global useGUI
