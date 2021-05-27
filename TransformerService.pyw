@@ -2,9 +2,11 @@
 # Transformer Service that converts addresses into google maps urls.
 import tkinter as tk
 from tkinter import filedialog
+import csv
 
 # Global Data
-employerData = 0
+employerData = []
+global transformed
 transformed = False
 
 def convertToUrl(addr):
@@ -20,38 +22,9 @@ def convertToUrl(addr):
         output = "https://www.google.com/maps/search/?api=1&query=" + output
         return output
 
-def convertFromCSV(csv):
-    csv = csv.split("\n")
-    csv.pop()
-    i = 0
-    for item in csv:
-        csv[i] = item.replace("\"","").split(",",3)
-        i = i + 1
-    
-    return csv
-
-def convertToCSV(data):
-    outputCSV = ""
-
-    for i in data:
-        rowlen = len(i)
-
-        for j in i:
-            val = j
-            try:
-                val = int(val)
-                if j != i[rowlen-1]:
-                    outputCSV += (j + ",")
-                else:
-                    outputCSV += j
-            except ValueError:
-                if j != i[rowlen-1]:
-                    outputCSV += ("\"" + j + "\"" + ",")
-                else:
-                    outputCSV += ("\"" + j + "\"")
-        outputCSV += "\n"
-
-    return outputCSV
+def guiClearTable():
+    for cell in data_frame.winfo_children():
+        cell.destroy()
 
 def guiCreateDataTable(employerData):
     for i in range(len(employerData)):
@@ -67,26 +40,32 @@ def guiCreateDataTable(employerData):
             label = tk.Label(master = cell, text = cellText, anchor="w", justify="left", padx=3, pady=2)
             label.pack(fill="both")
 
-def guiOpen():
+def guiOpen(filename):
     global transformed
-    transformed = False
+    global employerData
+    if filename:
+        file_path = filename
+    else:
+        file_path = filedialog.askopenfilename()
 
-    file_path = filedialog.askopenfilename()
     if not file_path:
         return
     if not file_path.endswith(".csv"):
         tk.messagebox.showwarning(title="Invalid Filetype", message="Only .csv files can be opened with this transformer service!")
         return
 
-    for cell in data_frame.winfo_children():
-        cell.destroy()
+    guiClearTable()
 
-    with open(file_path, "r") as input_file:
-        text = input_file.read()
-        global employerData 
-        employerData = convertFromCSV(text)
+    with open(file_path, newline='\n') as csvfile:
+        employerData = []
+        reader = csv.reader(csvfile, delimiter=',', quotechar='"')
+        for row in reader:
+            for col in row:
+                if col.find("N/A") != -1 or col.find("°") != -1:
+                    col = "N/A"
+            employerData.append(row)
+        
         for col in employerData[0]:
-            print(col)
             if col == "Google URL":
                 transformed = True
 
@@ -96,6 +75,7 @@ def guiOpen():
 
 def guiTransform():
     global transformed
+
     if not employerData:
         return
     if transformed:
@@ -106,20 +86,23 @@ def guiTransform():
     for row in employerData[1:]:
         row.append((convertToUrl(row[3])))
 
-    for cell in data_frame.winfo_children():
-        cell.destroy()
+    guiClearTable()
 
     guiCreateDataTable(employerData)
     transformed = True
 
-def guiSaveAs():
+def guiSaveAs(filename):
     fileExtentions = [("Comma Seperated Values", '*.csv')]
-    file = filedialog.asksaveasfile(mode='w', filetypes = fileExtentions, defaultextension = fileExtentions)
-    if file is None:
+    if filename:
+        file_path = filename
+    else:
+        file_path = filedialog.asksaveasfile(mode='w', filetypes = fileExtentions, defaultextension = fileExtentions)
+    if file_path is None:
         return
-    dataToSave = convertToCSV(employerData)
-    file.write(dataToSave)
-    file.close()
+    with open('innovators.csv', 'w', newline='') as file:
+        writer = csv.writer(file)
+        for row in employerData:
+            writer.writerow(row)
 
 # GUI
 window = tk.Tk()
@@ -136,9 +119,9 @@ def createGUI():
     global fr_buttons
     fr_buttons = tk.Frame(window, bg="#686868", pady=5)
 
-    btn_open = tk.Button(fr_buttons, text="Open .csv", command=guiOpen)
-    btn_transform = tk.Button(fr_buttons, text="Transform", command=guiTransform)
-    btn_save = tk.Button(fr_buttons, text="Save As", command=guiSaveAs)
+    btn_open = tk.Button(fr_buttons, text="Open .csv", command= lambda: guiOpen(0))
+    btn_transform = tk.Button(fr_buttons, text="Transform", command= lambda: guiTransform())
+    btn_save = tk.Button(fr_buttons, text="Save As", command= lambda: guiSaveAs(0))
 
     btn_open.grid(row=0, column=0, sticky="ew", padx=5, pady=5)
     btn_transform.grid(row=1, column=0, sticky="ew", padx=5, pady=5)
