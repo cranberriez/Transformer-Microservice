@@ -50,7 +50,7 @@ def guiOpen(filename):
 
     if not file_path:
         return
-    if not file_path.endswith(".csv"):
+    if not file_path.endswith(".csv") and not filename:
         tk.messagebox.showwarning(title="Invalid Filetype", message="Only .csv files can be opened with this transformer service!")
         return
 
@@ -99,10 +99,13 @@ def guiSaveAs(filename):
         file_path = filedialog.asksaveasfile(mode='w', filetypes = fileExtentions, defaultextension = fileExtentions)
     if file_path is None:
         return
-    with open('innovators.csv', 'w', newline='') as file:
-        writer = csv.writer(file)
+    with open(file_path.name, 'w', newline='') as file:
+        writer = csv.writer(file, delimiter=',', quotechar='"', lineterminator='\n',)
         for row in employerData:
             writer.writerow(row)
+    
+    if not filename:
+        tk.messagebox.showinfo(title="File Saved Successfully", message="The file was successfully saved to " + file_path.name)
 
 # GUI
 window = tk.Tk()
