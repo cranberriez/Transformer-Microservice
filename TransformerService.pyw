@@ -8,6 +8,9 @@ import csv
 employerData = []
 global transformed
 transformed = False
+global transformCol
+transformCol = 3
+
 
 def convertToUrl(addr):
     # Encoding Rules
@@ -31,13 +34,16 @@ def guiCreateDataTable(employerData):
         for j in range(len(employerData[i])):
             cell = tk.Frame(
                 master = data_frame,
-                relief = tk.RAISED,
+                relief = tk.GROOVE,
                 borderwidth = 1)
             cell.grid(row = i, column = j, sticky="ew")
             cellText = employerData[i][j]
             if cellText.find("N/A") != -1 or cellText.find("°") != -1:
                 cellText = "N/A"
-            label = tk.Label(master = cell, text = cellText, anchor="w", justify="left", padx=3, pady=2)
+            if j == transformCol:
+                label = tk.Label(master = cell, text = cellText, anchor="w", justify="left", padx=4, pady=3, background="#bdc3c7")
+            else:
+                label = tk.Label(master = cell, text = cellText, anchor="w", justify="left", padx=4, pady=3)
             label.pack(fill="both")
 
 def guiOpen(filename):
@@ -84,7 +90,7 @@ def guiTransform():
     employerData[0].append("Google URL")
 
     for row in employerData[1:]:
-        row.append((convertToUrl(row[3])))
+        row.append((convertToUrl(row[transformCol])))
 
     guiClearTable()
 
@@ -107,6 +113,20 @@ def guiSaveAs(filename):
     if not filename:
         tk.messagebox.showinfo(title="File Saved Successfully", message="The file was successfully saved to " + file_path.name)
 
+def incTransformCol(inc):
+    global transformCol
+    if not employerData:
+        return
+    if transformCol + inc > len(employerData[0])-1 or transformCol + inc < 0: 
+        return
+    transformCol = transformCol + inc
+    lbl_value["text"] = transformCol
+    guiRewriteTable()
+
+def guiRewriteTable():
+    guiClearTable()
+    guiCreateDataTable(employerData)
+
 # GUI
 window = tk.Tk()
 useGUI = True
@@ -120,15 +140,42 @@ def createGUI():
     global data_frame
     data_frame = tk.Frame(window)
     global fr_buttons
-    fr_buttons = tk.Frame(window, bg="#686868", pady=5)
+    fr_buttons = tk.Frame(window, bg="#d3d3d3", pady=5)
 
-    btn_open = tk.Button(fr_buttons, text="Open .csv", command= lambda: guiOpen(0))
-    btn_transform = tk.Button(fr_buttons, text="Transform", command= lambda: guiTransform())
+    open_label = tk.Label(master = fr_buttons, text = "Open .CSV File To View", anchor="w", justify="left", padx=3, pady=2, bg="#d3d3d3")
+    btn_open = tk.Button(fr_buttons, text="Open", command= lambda: guiOpen(0))
+    
+    tcol_label = tk.Label(master = fr_buttons, text = "Select Column to Transform", anchor="w", justify="left", padx=3, pady=2, bg="#d3d3d3")
+    tcol_frame = tk.Frame(fr_buttons)
+    for i in range(3):
+        tcol_frame.columnconfigure(i, weight=1)
+    btn_decrease = tk.Button(master=tcol_frame, text="-", command= lambda: incTransformCol(-1))
+    btn_decrease.grid(row=0, column=0, sticky="nsew")
+
+    global lbl_value
+    lbl_value = tk.Label(master=tcol_frame, text=0)
+    lbl_value["text"] = str(transformCol)
+    lbl_value.grid(row=0, column=1)
+
+    btn_increase = tk.Button(master=tcol_frame, text="+", command= lambda: incTransformCol(1))
+    btn_increase.grid(row=0, column=2, sticky="nsew")
+
+    transform_label = tk.Label(master = fr_buttons, text = "Add Google URL to .CSV", anchor="w", justify="left", padx=3, pady=2, bg="#d3d3d3")
+    btn_transform = tk.Button(fr_buttons, text="Transform", command=guiTransform)
+    save_label = tk.Label(master = fr_buttons, text = "Save Transformed .CSV", anchor="w", justify="left", padx=3, pady=2, bg="#d3d3d3")
     btn_save = tk.Button(fr_buttons, text="Save As", command= lambda: guiSaveAs(0))
 
-    btn_open.grid(row=0, column=0, sticky="ew", padx=5, pady=5)
-    btn_transform.grid(row=1, column=0, sticky="ew", padx=5, pady=5)
-    btn_save.grid(row=2, column=0, sticky="ew", padx=5, pady=5)
+    open_label.grid(row=0, column=0, sticky="ew", padx=5, pady=(5,0))
+    btn_open.grid(row=1, column=0, sticky="ew", padx=5, pady=(0,5))
+    
+    tcol_label.grid(row=2, column=0, sticky="ew", padx=5, pady=(5,0))
+    tcol_frame.grid(row=3, column=0, sticky="ew", padx=5, pady=(0,5))
+    
+    transform_label.grid(row=4, column=0, sticky="ew", padx=5, pady=(5,0))
+    btn_transform.grid(row=5, column=0, sticky="ew", padx=5, pady=(0,5))
+    
+    save_label.grid(row=6, column=0, sticky="ew", padx=5, pady=(5,0))
+    btn_save.grid(row=7, column=0, sticky="ew", padx=5, pady=(0,5))
 
     fr_buttons.grid(row=0, column=0, sticky="ns")
     data_frame.grid(row=0, column=1, sticky="nsew")
