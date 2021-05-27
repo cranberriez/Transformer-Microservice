@@ -101,10 +101,10 @@ def guiSaveAs(filename):
     if filename:
         file_path = filename
     else:
-        file_path = filedialog.asksaveasfile(mode='w', filetypes = fileExtentions, defaultextension = fileExtentions)
+        file_path = filedialog.asksaveasfile(mode='w', filetypes = fileExtentions, defaultextension = fileExtentions).name
     if file_path is None:
         return
-    with open(file_path.name, 'w', newline='') as file:
+    with open(file_path, 'w', newline='') as file:
         writer = csv.writer(file, delimiter=',', quotechar='"', lineterminator='\n',)
         for row in employerData:
             writer.writerow(row)
@@ -208,12 +208,12 @@ def main(argv):
         if not inputfile:
             print("Input file is required")
             sys.exit()
-        print('Input file is '+ inputfile)
+        #print('Input file is '+ inputfile)
         if not outputfile:
             print("Output file is required")
             sys.exit()
-        print('Output file is '+ outputfile)
-        print('Transform column is '+ str(transformCol))
+        #print('Output file is '+ outputfile)
+        #print('Transform column is '+ str(transformCol))
 
     if (useGUI):
         createGUI()
